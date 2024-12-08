@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+
+  bloqit_db:
+    image: postgres:13
+    container_name: bloqit_db
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: bloqit
+      POSTGRES_USER: bloqit
+      POSTGRES_PASSWORD: mypassword
+    networks:
+      - bloqit_network
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres:/var/lib/postgresql/data
+    command: postgres -c max_connections=500
+
+  bloqit_api:
+    image: bloqit:latest
+    container_name: bloqit_api
+    env_file:
+      - .env
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    networks:
+      - bloqit_network
+    depends_on:
+      - bloqit_db
+    command: uvicorn --workers ${UVICORN_WORKERS} bloqit.main:app --host 0.0.0.0 --port 8000
+
+networks:
+  bloqit_network:
+    driver: bridge
