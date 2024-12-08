@@ -1,6 +1,6 @@
 # Lauch the services
 
-To launch the services, run the following command:
+To launch the services, run the following commands:
 
 ```bash
 docker-compose up --build -d bloqit_db
