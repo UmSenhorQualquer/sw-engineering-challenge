@@ -4,14 +4,16 @@ import requests
 import statistics
 from tabulate import tabulate
 
-BASE_URL = "http://localhost:8000"  # Adjust this if your API runs on a different port
+BASE_URL = "http://localhost:8000"  # API URL
 
 NUMBER_REQUESTS = 1000  # Total number of requests per test
 CONCURRENCY_LEVELS = [1, 5, 10, 20, 50, 100]  # Number of concurrent workers
     
 
 def make_request(endpoint):
-    """Make a single request to the specified endpoint."""
+    """
+    Make a single request to the specified endpoint.
+    """
     try:
         start_time = time.time()
         response = requests.get(f"{BASE_URL}/{endpoint}")
@@ -22,7 +24,9 @@ def make_request(endpoint):
         return None, None
 
 def run_concurrent_requests(endpoint, num_requests, num_workers):
-    """Run concurrent requests using multiprocessing."""
+    """
+    Run concurrent requests using multiprocessing.
+    """
     start_time_total = time.time()
     with ProcessPoolExecutor(max_workers=num_workers) as executor:
         futures = [executor.submit(make_request, endpoint) for _ in range(num_requests)]
@@ -57,7 +61,9 @@ def run_concurrent_requests(endpoint, num_requests, num_workers):
     }
 
 def test_api_performance():
-    """Test the API performance with different concurrency levels."""
+    """
+    Test the API performance with different concurrency levels.
+    """
     endpoints = [
         "bloqs/",
         "bloqs/22ffa3c5-3a3d-4f71-81f1-cac18ffbc510",

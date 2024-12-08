@@ -7,6 +7,10 @@ docker-compose up --build -d bloqit_db
 docker-compose up --build -d bloqit_api
 ```
 
+# API Documentation
+
+The API documentation is available at http://localhost:8000/docs.
+
 # Tests
 
 Set the environment with Anaconda and install the dependencies:
@@ -82,6 +86,8 @@ TOTAL                          204     32    84%
 
 
 ## Performance tests
+
+Tested on **Ubuntu 22.04.5 LTS** with an **Intel(R) Core(TM) i5-9600K CPU @ 3.70GHz** processor.
 
 ```bash
 python tests/performance_tests/test_performance.py
