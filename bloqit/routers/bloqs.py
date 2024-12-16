@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import Session, select
+from sqlmodel import select
 from typing import List
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..database import get_session
 from ..models.bloq import Bloq
@@ -11,20 +12,20 @@ router = APIRouter(
 )
 
 @router.get("/", response_model=List[Bloq])
-def get_bloqs(session: Session = Depends(get_session)):
-    bloqs = session.exec(select(Bloq)).all()
-    return bloqs
+async def get_bloqs(session: AsyncSession = Depends(get_session)):
+    bloqs = await session.execute(select(Bloq))
+    return bloqs.scalars().all()
 
 @router.get("/{bloq_id}", response_model=Bloq)
-def get_bloq(bloq_id: str, session: Session = Depends(get_session)):
-    bloq = session.get(Bloq, bloq_id)
+async def get_bloq(bloq_id: str, session: AsyncSession = Depends(get_session)):
+    bloq = await session.get(Bloq, bloq_id)
     if not bloq:
         raise HTTPException(status_code=404, detail="Bloq not found")
     return bloq
 
 @router.post("/", response_model=Bloq)
-def create_bloq(bloq: Bloq, session: Session = Depends(get_session)):
+async def create_bloq(bloq: Bloq, session: AsyncSession = Depends(get_session)):
     session.add(bloq)
-    session.commit()
-    session.refresh(bloq)
+    await session.commit()
+    await session.refresh(bloq)
     return bloq 

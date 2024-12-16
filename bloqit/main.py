@@ -11,8 +11,8 @@ from contextlib import asynccontextmanager
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    create_db_and_tables()
-    load_json_data(engine)
+    await create_db_and_tables()
+    await load_json_data(engine)
     yield
 
 app = FastAPI(

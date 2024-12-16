@@ -1,29 +1,52 @@
+from typing import AsyncGenerator
 import pytest
 from fastapi.testclient import TestClient
-from sqlmodel import Session, SQLModel, create_engine
+from sqlmodel import SQLModel
 from sqlmodel.pool import StaticPool
 import json
 import os
-
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import create_async_engine
 from bloqit.main import app
 from bloqit.database import get_session
-
+from httpx import AsyncClient
 # Create test database
-TEST_DATABASE_URL = "sqlite://"  # In-memory database
-engine = create_engine(TEST_DATABASE_URL, connect_args={"check_same_thread": False}, poolclass=StaticPool)
+TEST_DATABASE_URL = "sqlite+aiosqlite://"  # In-memory database
 
-def get_test_session():
-    with Session(engine) as session:
+
+
+print(TEST_DATABASE_URL)
+engine = create_async_engine(
+    TEST_DATABASE_URL,
+    echo=True,
+    future=True
+)
+
+
+
+# Fixture for database session
+@pytest.fixture(name="session")
+async def session() -> AsyncGenerator[AsyncSession, None]:
+    async with AsyncSession(engine, expire_on_commit=False) as session:
         yield session
 
-app.dependency_overrides[get_session] = get_test_session
+app.dependency_overrides[get_session] = session
+
+@pytest.fixture(autouse=True)
+async def create_tables():
+    async with engine.begin() as conn:
+        await conn.run_sync(SQLModel.metadata.drop_all)
+        await conn.run_sync(SQLModel.metadata.create_all)
+    yield
+    async with engine.begin() as conn:
+        await conn.run_sync(SQLModel.metadata.drop_all)
+
 
 @pytest.fixture(name="client")
-def client_fixture():
-    SQLModel.metadata.create_all(engine)
-    with TestClient(app) as c:
+async def client():
+    
+    async with AsyncClient(app=app) as c:
         yield c
-    SQLModel.metadata.drop_all(engine)
 
 @pytest.fixture(name="test_data")
 def test_data_fixture():
